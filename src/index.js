@@ -1,29 +1,31 @@
 import './css/styles.css';
 import { fetchCountries } from './fetchCountries';
-import { debounce } from 'lodash.debounce';
+import { debounce } from 'lodash';
 import Notiflix from 'notiflix';
 
-const refs = {
-    input: document.querySelector('#search-box'),
-    list: document.querySelector('.country-list'),
-    info: document.querySelector('.country-info')
-};
 const DEBOUNCE_DELAY = 300;
 
-refs.info.addEventListener('input', debounce(selectionCountry, DEBOUNCE_DELAY));
+const refs = {
+    input: document.querySelector("#search-box"),
+    countryList: document.querySelector('.country-list'),
+    countryInfo: document.querySelector('.country-info'),
+};
 
-function selectionCountry() {
-    const trim = refs.input.value.trim();
-    
-    if (trim === '') { return; }
-    
-    fetchCountries(trim).then(countries => { 
-    list.innerHTML = '';
-    info.innerHTML = '';
-                if (countries.length === 1) {
-                    refs.list.insertAdjacentHTML('beforeend', renderList(countries));
-                    refs.info.insertAdjacentHTML('beforeend', renderInfo(countries));
-        countries.map(item => { 
+refs.input.addEventListener("input", debounce(searchingCountry, DEBOUNCE_DELAY));
+
+function searchingCountry() {
+    const searchRequest = refs.input.value.trim();
+
+    if (searchRequest === "") { return; }
+
+    fetchCountries(searchRequest)
+    .then(countries => {
+        refs.countryList.innerHTML = "";
+        refs.countryInfo.innerHTML = "";
+        if (countries.length === 1) {
+            refs.countryList.insertAdjacentHTML('beforeend', renderCountryList(countries));
+            refs.countryInfo.insertAdjacentHTML('beforeend', renderCountryInfo(countries));
+            countries.map(item => { 
                 if (item.name.official === "Ukraine") {
                     setTimeout(() => alert("Glory to Ukraine!"), 400)
                 } 
@@ -31,17 +33,17 @@ function selectionCountry() {
         } else if (countries.length > 10) {
             Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
         } else {
-            refs.list.insertAdjacentHTML('beforeend', renderCountryList(countries));
+            refs.countryList.insertAdjacentHTML('beforeend', renderCountryList(countries));
         }
     })
     .catch(() => Notiflix.Notify.failure('Oops, there is no country with that name'));
 };
 
 
-function renderList(countries) {
+function renderCountryList(countries) {
     return countries.map(
         ({ name, flags }) => {
-            refs.list.style.backgroundColor = "#ffffffa0";
+            refs.countryList.style.backgroundColor = "#ffffffa0";
             return `
                     <li class="country-item" style="display:flex; align-items: center;">
                         <img class="country-flag" src="${flags.svg}" alt="Flag of ${name.official}" width = 30px height = 30px>
@@ -52,8 +54,8 @@ function renderList(countries) {
 };
 
 
-function renderInfo(countries) {
-    refs.info.style.backgroundColor = "#ffffffa0";
+function renderCountryInfo(countries) {
+    refs.countryInfo.style.backgroundColor = "#ffffffa0";
     return countries.map(({ capital, population, languages }) => {
         return `
         <ul class="country-info__list">
